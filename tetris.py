@@ -94,11 +94,11 @@ class Play(Board):
         
         self.field = []
         self.color = str()
-        self.rectangle = str()
-        self.rectangles = []
+        self.figure = str()
+        self.figures = []
         self.colors = [(255, 255, 0), (0, 128, 0), (0, 0, 255), (255, 0, 0), (255, 165, 0)]
         # for all 2nd - rotate center, 1st - left edge, 4th - right edge, 3rd - y edge
-        self.coords = [[(100, 25), (125, 25), (150, 25), (175, 25)], # line
+        self.figures_coords = [[(100, 25), (125, 25), (150, 25), (175, 25)], # line
                             [(125, 25), (150, 25), (125, 50), (150, 50)], # cube edge for y - 3rd
                             [(100, 50), (125, 25), (125, 50), (150, 25)], # S-shape edge for y - 3nd
                             [(100, 25), (125, 25), (125, 50), (150, 50)], # Z-shape edge for y - 3rd
@@ -117,62 +117,62 @@ class Play(Board):
         self.create_figures()
 
     def create_figures(self):
-        for coords in self.coords:
+        for figure_coord in self.figures_coords:
             figure = []
-            for coord in coords:
+            for coord in figure_coord:
                 figure.append(pygame.Rect(coord[0], coord[1], 25, 25))
-            self.rectangles.append(figure)
-        self.rectangle = choice(self.rectangles)
+            self.figures.append(figure)
+        self.figure = choice(self.figures)
 
         self.color = choice(self.colors)
 
     def draw_figures(self):
         for i in range(4):
-            self.rect.x = self.rectangle[i].x
-            self.rect.y = self.rectangle[i].y
+            self.rect.x = self.figure[i].x
+            self.rect.y = self.figure[i].y
             pygame.draw.rect(screen, pygame.Color(self.color), self.rect)
 
     def check(self, i):
-        if self.rectangle[i].x < 25 or self.rectangle[i].x > 270:
+        if self.figure[i].x < 25 or self.figure[i].x > 270:
             return False
-        elif self.rectangle[i].y > 500:
+        elif self.figure[i].y > 500:
             return False
         return True
 
     def move_left(self):
-        old_rectangle = copy.deepcopy(self.rectangle)
+        old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            self.rectangle[i].x -= self.cell_size
+            self.figure[i].x -= self.cell_size
             if not self.check(i):
-                self.rectangle = copy.deepcopy(old_rectangle)
+                self.figure = copy.deepcopy(old_figure)
                 break
 
     def move_right(self):
-        old_rectangle = copy.deepcopy(self.rectangle)
+        old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            self.rectangle[i].x += self.cell_size
+            self.figure[i].x += self.cell_size
             if not self.check(i):
-                self.rectangle = copy.deepcopy(old_rectangle)
+                self.figure = copy.deepcopy(old_figure)
                 break
 
     def move_down(self):
-        old_rectangle = copy.deepcopy(self.rectangle)
+        old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            self.rectangle[i].y += self.cell_size
+            self.figure[i].y += self.cell_size
             if not self.check(i):
-                self.rectangle = copy.deepcopy(old_rectangle)
+                self.figure = copy.deepcopy(old_figure)
                 break
 
     def rotate(self):
-        center = self.rectangle[1]
-        old_rectangle = copy.deepcopy(self.rectangle)
+        center = self.figure[1]
+        old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            x = self.rectangle[i].y - center.y
-            y = self.rectangle[i].x - center.x
-            self.rectangle[i].x = center.x - x
-            self.rectangle[i].y = center.y + y
+            x = self.figure[i].y - center.y
+            y = self.figure[i].x - center.x
+            self.figure[i].x = center.x - x
+            self.figure[i].y = center.y + y
             if not self.check(i):
-                self.rectangle = copy.deepcopy(old_rectangle)
+                self.figure = copy.deepcopy(old_figure)
                 break
 
 
