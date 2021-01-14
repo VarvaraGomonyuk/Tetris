@@ -99,12 +99,12 @@ class Play(Board):
         self.colors = [(255, 255, 0), (0, 128, 0), (0, 0, 255), (255, 0, 0), (255, 165, 0)]
         # for all 2nd - rotate center, 1st - left edge, 4th - right edge, 3rd - y edge
         self.figures_coords = [[(100, 25), (125, 25), (150, 25), (175, 25)], # line
-                            [(125, 25), (150, 25), (125, 50), (150, 50)], # cube edge for y - 3rd
-                            [(100, 50), (125, 25), (125, 50), (150, 25)], # S-shape edge for y - 3nd
-                            [(100, 25), (125, 25), (125, 50), (150, 50)], # Z-shape edge for y - 3rd
-                            [(125, 25), (150, 50), (150, 75), (150, 25)], # edge for y - 3rd
-                            [(125, 25), (125, 50), (125, 75), (150, 25)], # Г-shape edge for y - 3rd
-                            [(100, 25), (125, 25), (125, 50), (150, 25)]] # T-shape edge for y - 3rd
+                            [(125, 25), (150, 25), (125, 50), (150, 50)], # cube
+                            [(100, 50), (125, 25), (125, 50), (150, 25)], # S-shape
+                            [(100, 25), (125, 25), (125, 50), (150, 50)], # Z-shape
+                            [(125, 25), (150, 50), (150, 75), (150, 25)], 
+                            [(125, 25), (125, 50), (125, 75), (150, 25)], # Г-shape edge 
+                            [(100, 25), (125, 25), (125, 50), (150, 25)]] # T-shape edge 
 
         for i in range(self.height):
             row = []
@@ -132,7 +132,7 @@ class Play(Board):
             self.rect.y = self.figure[i].y
             pygame.draw.rect(screen, pygame.Color(self.color), self.rect)
 
-    def check(self, i):
+    def check(self, i): # check for borders
         if self.figure[i].x < 25 or self.figure[i].x > 270:
             return False
         elif self.figure[i].y > 500:
@@ -164,11 +164,11 @@ class Play(Board):
                 break
 
     def rotate(self):
-        center = self.figure[1]
+        center = self.figure[1] # takking center of rotation
         old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            x = self.figure[i].y - center.y
-            y = self.figure[i].x - center.x
+            x = self.figure[i].y - center.y #finding new coords
+            y = self.figure[i].x - center.x 
             self.figure[i].x = center.x - x
             self.figure[i].y = center.y + y
             if not self.check(i):
