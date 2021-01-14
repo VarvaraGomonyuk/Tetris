@@ -65,5 +65,36 @@ def start_screen():
         clock.tick(FPS)
 
 
+class Board:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = [[0] * width for _ in range(height)]
+        self.left = 25
+        self.top = 25
+        self.cell_size = 25
+
+    def render(self, surface):
+        color = pygame.Color('white')
+        for i in range(self.height):
+            for j in range(self.width):
+                pygame.draw.rect(surface, color, (self.left + self.cell_size * j, self.top + self.cell_size * i,
+                                                   self.cell_size, self.cell_size), 1 if self.board[i][j] == 0 else 0)
+
+
 start_screen()
+
+board = Board(10, 20)
+
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    screen.fill(pygame.Color(36, 9, 53))
+    board.render(screen)
+    pygame.display.flip()
+    clock.tick(FPS)
 terminate()
