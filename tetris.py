@@ -74,6 +74,11 @@ class Board:
         self.top = 25
         self.cell_size = 25
 
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
     def render(self, surface):
         color = pygame.Color('white')
         for i in range(self.height):
@@ -82,9 +87,98 @@ class Board:
                                                    self.cell_size, self.cell_size), 1 if self.board[i][j] == 0 else 0)
 
 
+class Play(Board):
+    def __init__(self, width, height, left=25, top=25, cell_size=25):
+        super().__init__(width, height)
+        self.set_view(left, top, cell_size)
+        
+        self.field = []
+        self.color = str()
+        self.rectangle = str()
+        self.rectangles = []
+        self.colors = [(255, 255, 0), (0, 128, 0), (0, 0, 255), (255, 0, 0), (255, 165, 0)]
+        # for all 2nd - rotate center, 1st - left edge, 4th - right edge, 3rd - y edge
+        self.coords = [[(100, 25), (125, 25), (150, 25), (175, 25)], # line
+                            [(125, 25), (150, 25), (125, 50), (150, 50)], # cube edge for y - 3rd
+                            [(100, 50), (125, 25), (125, 50), (150, 25)], # S-shape edge for y - 3nd
+                            [(100, 25), (125, 25), (125, 50), (150, 50)], # Z-shape edge for y - 3rd
+                            [(125, 25), (150, 50), (150, 75), (150, 25)], # edge for y - 3rd
+                            [(125, 25), (125, 50), (125, 75), (150, 25)], # Г-shape edge for y - 3rd
+                            [(100, 25), (125, 25), (125, 50), (150, 25)]] # T-shape edge for y - 3rd
+
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                row.append(0)
+            self.field.append(row)
+
+        self.rect = pygame.Rect(self.left, self.top, self.cell_size - 2, self.cell_size - 2)
+
+        self.create_figures()
+
+    def create_figures(self):
+        for coords in self.coords:
+            figure = []
+            for coord in coords:
+                figure.append(pygame.Rect(coord[0], coord[1], 25, 25))
+            self.rectangles.append(figure)
+        self.rectangle = choice(self.rectangles)
+
+        self.color = choice(self.colors)
+
+    def draw_figures(self):
+        for i in range(4):
+            self.rect.x = self.rectangle[i].x
+            self.rect.y = self.rectangle[i].y
+            pygame.draw.rect(screen, pygame.Color(self.color), self.rect)
+
+    def check(self, i):
+        if self.rectangle[i].x < 25 or self.rectangle[i].x > 270:
+            return False
+        elif self.rectangle[i].y > 500:
+            return False
+        return True
+
+    def move_left(self):
+        old_rectangle = copy.deepcopy(self.rectangle)
+        for i in range(4):
+            self.rectangle[i].x -= self.cell_size
+            if not self.check(i):
+                self.rectangle = copy.deepcopy(old_rectangle)
+                break
+
+    def move_right(self):
+        old_rectangle = copy.deepcopy(self.rectangle)
+        for i in range(4):
+            self.rectangle[i].x += self.cell_size
+            if not self.check(i):
+                self.rectangle = copy.deepcopy(old_rectangle)
+                break
+
+    def move_down(self):
+        old_rectangle = copy.deepcopy(self.rectangle)
+        for i in range(4):
+            self.rectangle[i].y += self.cell_size
+            if not self.check(i):
+                self.rectangle = copy.deepcopy(old_rectangle)
+                break
+
+    def rotate(self):
+        center = self.rectangle[1]
+        old_rectangle = copy.deepcopy(self.rectangle)
+        for i in range(4):
+            x = self.rectangle[i].y - center.y
+            y = self.rectangle[i].x - center.x
+            self.rectangle[i].x = center.x - x
+            self.rectangle[i].y = center.y + y
+            if not self.check(i):
+                self.rectangle = copy.deepcopy(old_rectangle)
+                break
+
+
 start_screen()
 
-board = Board(10, 20)
+board = Play(10, 20)
 
 running = True
 
@@ -92,9 +186,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                board.move_right()
+            if event.key == pygame.K_LEFT:
+                board.move_left()
+            if event.key == pygame.K_DOWN:
+                board.move_down()
+            if event.key == pygame.K_UP:
+                board.rotate()
 
     screen.fill(pygame.Color(36, 9, 53))
     board.render(screen)
+    board.draw_figures()
     pygame.display.flip()
     clock.tick(FPS)
 terminate()
