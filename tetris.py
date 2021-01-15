@@ -238,9 +238,10 @@ class Play(Board):
         self.score = 0
 
     def write_scores(self, score):
-        con = sqlite3.connect("data/results.db")
+        con = sqlite3.connect("data/ResultsDB.sqlite")
         cur = con.cursor()
-        cur.execute("""INSERT INTO results(score) VALUES(?)""", score)
+        request = f"INSERT INTO results(score) VALUES({score})"
+        cur.execute(request)
         con.commit()
         con.close()
 
