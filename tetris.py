@@ -86,6 +86,17 @@ class Board:
                 pygame.draw.rect(surface, color, (self.left + self.cell_size * j, self.top + self.cell_size * i,
                                                    self.cell_size, self.cell_size), 1 if self.board[i][j] == 0 else 0)
 
+        text = ['SCORE']
+        font = pygame.font.Font(None, 50)
+        text_coord = 30
+        for line in text:
+            string_rendered = font.render(line, True, pygame.Color('purple'))
+            rect = string_rendered.get_rect()
+            rect.top = text_coord
+            rect.x = 350
+            text_coord += rect.height
+            screen.blit(string_rendered, rect)
+
 
 class Play(Board):
     def __init__(self, width, height, left=30, top=30, cell_size=30):
@@ -93,6 +104,8 @@ class Play(Board):
         self.set_view(left, top, cell_size)
         
         self.field = copy.deepcopy(self.board)
+        self.score = 0
+        self.scores = {0: 0, 1: 100, 2: 300, 3: 700, 4: 1500}
         self.color = str()
         self.figure = str()
         self.figures = []
@@ -166,6 +179,9 @@ class Play(Board):
                 break
 
     def fallen_figures(self):
+        for i in range(self.width):
+            if self.field[1][i]:
+                self.game_over()
         for y, raw in enumerate(self.field):
             for x, col in enumerate(raw):
                 if col:
@@ -184,6 +200,41 @@ class Play(Board):
             if not self.check(i):
                 self.figure = copy.deepcopy(old_figure)
                 break
+
+    def lines_check(self):
+        line, lines = self.height - 1, 0
+        for row in range(self.height - 1, -1, -1):
+            count = 0
+            for i in range(self.width):
+                if self.field[row][i]:
+                    count += 1
+                self.field[line][i] = self.field[row][i]
+            if count < self.width:
+                line -= 1
+            else:
+                lines += 1
+        self.score += self.scores[lines]
+        
+        text = [str(self.score)]
+        font = pygame.font.Font(None, 50)
+        text_coord = 100
+        for line in text:
+            string_rendered = font.render(line, True, pygame.Color('purple'))
+            rect = string_rendered.get_rect()
+            rect.top = text_coord
+            rect.x = 350
+            text_coord += rect.height
+            screen.blit(string_rendered, rect)
+    
+    def game_over(self):
+        self.field = copy.deepcopy(self.board)
+        for i in range(30, 600, 30):
+            for j in range(30, 330, 30):
+                self.rect.x = j
+                self.rect.y = i
+                pygame.draw.rect(screen, pygame.Color(choice(self.colors)), self.rect)
+        self.score = 0
+                
 
 
 start_screen()
@@ -210,6 +261,7 @@ while running:
     board.render(screen)
     board.draw_figures()
     board.fallen_figures()
+    board.lines_check()
     pygame.display.flip()
     clock.tick(FPS)
 terminate()
