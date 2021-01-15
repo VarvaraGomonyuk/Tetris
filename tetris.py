@@ -9,8 +9,8 @@ pygame.init()
 pygame.key.set_repeat(200, 70)
 
 FPS = 60
-WIDTH = 450
-HEIGHT = 600
+WIDTH = 500
+HEIGHT = 800
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
@@ -49,7 +49,7 @@ def start_screen():
         string_rendered = font.render(line, True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         intro_rect.top = text_coord
-        intro_rect.x = 55
+        intro_rect.x = 90
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
 
@@ -69,10 +69,10 @@ class Board:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.board = [[0] * width for _ in range(height)]
-        self.left = 25
-        self.top = 25
-        self.cell_size = 25
+        self.board = [[0] * 10 for _ in range(20)]
+        self.left = 30
+        self.top = 30
+        self.cell_size = 30
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -88,29 +88,23 @@ class Board:
 
 
 class Play(Board):
-    def __init__(self, width, height, left=25, top=25, cell_size=25):
+    def __init__(self, width, height, left=30, top=30, cell_size=30):
         super().__init__(width, height)
         self.set_view(left, top, cell_size)
         
-        self.field = []
+        self.field = copy.deepcopy(self.board)
         self.color = str()
         self.figure = str()
         self.figures = []
         self.colors = [(255, 255, 0), (0, 128, 0), (0, 0, 255), (255, 0, 0), (255, 165, 0)]
         # for all 2nd - rotate center, 1st - left edge, 4th - right edge, 3rd - y edge
-        self.figures_coords = [[(100, 25), (125, 25), (150, 25), (175, 25)], # line
-                            [(125, 25), (150, 25), (125, 50), (150, 50)], # cube
-                            [(100, 50), (125, 25), (125, 50), (150, 25)], # S-shape
-                            [(100, 25), (125, 25), (125, 50), (150, 50)], # Z-shape
-                            [(125, 25), (150, 50), (150, 75), (150, 25)], 
-                            [(125, 25), (125, 50), (125, 75), (150, 25)], # Г-shape edge 
-                            [(100, 25), (125, 25), (125, 50), (150, 25)]] # T-shape edge 
-
-        for i in range(self.height):
-            row = []
-            for j in range(self.width):
-                row.append(0)
-            self.field.append(row)
+        self.figures_coords = [[(120, 30), (150, 30), (180, 30), (210, 30)], # line
+                            [(150, 30), (180, 30), (150, 60), (180, 60)], # cube
+                            [(120, 60), (150, 30), (150, 60), (180, 30)], # S-shape
+                            [(120, 30), (150, 30), (150, 60), (180, 60)], # Z-shape
+                            [(150, 30), (180, 60), (180, 90), (180, 30)], 
+                            [(150, 30), (150, 60), (150, 90), (180, 30)], # Г-shape edge 
+                            [(120, 30), (150, 30), (150, 60), (180, 30)]] # T-shape edge 
 
         self.rect = pygame.Rect(self.left, self.top, self.cell_size - 2, self.cell_size - 2)
 
@@ -120,9 +114,9 @@ class Play(Board):
         for figure_coord in self.figures_coords:
             figure = []
             for coord in figure_coord:
-                figure.append(pygame.Rect(coord[0], coord[1], 25, 25))
+                figure.append(pygame.Rect(coord[0], coord[1], 30, 30))
             self.figures.append(figure)
-        self.figure = choice(self.figures)
+        self.figure = copy.deepcopy(choice(self.figures))
 
         self.color = choice(self.colors)
 
@@ -134,9 +128,9 @@ class Play(Board):
         self.move_down()
 
     def check(self, i): # check for borders
-        if self.figure[i].x < 25 or self.figure[i].x > 270:
+        if self.figure[i].x < 30 or self.figure[i].x > 300:
             return False
-        elif self.figure[i].y > 500:
+        elif self.figure[i].y >= 600 or self.field[self.figure[i].y // 30][self.figure[i].x // 30 - 1]:
             return False
         return True
 
@@ -156,14 +150,28 @@ class Play(Board):
                 self.figure = copy.deepcopy(old_figure)
                 break
 
-    def move_down(self, speed=100):
+    def move_down(self, speed=120):
         old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            self.figure[i].y += speed / FPS
+            self.figure[i].y += speed // FPS
             if not self.check(i):
+                for i in range(4):
+                    x = int(old_figure[i].x // 30) - 1
+                    y = int(old_figure[i].y // 30)
+                    if not self.field[y][x]:
+                        self.field[y][x] = self.color
+                self.fallen_figures()
                 self.figure = copy.deepcopy(choice(self.figures))
                 self.color = choice(self.colors)
                 break
+
+    def fallen_figures(self):
+        for y, raw in enumerate(self.field):
+            for x, col in enumerate(raw):
+                if col:
+                    self.rect.x = (x + 1) * self.cell_size
+                    self.rect.y = (y + 1) * self.cell_size
+                    pygame.draw.rect(screen, col, self.rect)
 
     def rotate(self):
         center = self.figure[1] # takking center of rotation
@@ -201,6 +209,7 @@ while running:
     screen.fill(pygame.Color(36, 9, 53))
     board.render(screen)
     board.draw_figures()
+    board.fallen_figures()
     pygame.display.flip()
     clock.tick(FPS)
 terminate()
