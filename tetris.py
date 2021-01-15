@@ -80,7 +80,7 @@ class Board:
         self.cell_size = cell_size
 
     def render(self, surface):
-        color = pygame.Color('white')
+        color = pygame.Color('purple')
         for i in range(self.height):
             for j in range(self.width):
                 pygame.draw.rect(surface, color, (self.left + self.cell_size * j, self.top + self.cell_size * i,
@@ -131,6 +131,7 @@ class Play(Board):
             self.rect.x = self.figure[i].x
             self.rect.y = self.figure[i].y
             pygame.draw.rect(screen, pygame.Color(self.color), self.rect)
+        self.move_down()
 
     def check(self, i): # check for borders
         if self.figure[i].x < 25 or self.figure[i].x > 270:
@@ -155,12 +156,13 @@ class Play(Board):
                 self.figure = copy.deepcopy(old_figure)
                 break
 
-    def move_down(self):
+    def move_down(self, speed=100):
         old_figure = copy.deepcopy(self.figure)
         for i in range(4):
-            self.figure[i].y += self.cell_size
+            self.figure[i].y += speed / FPS
             if not self.check(i):
-                self.figure = copy.deepcopy(old_figure)
+                self.figure = copy.deepcopy(choice(self.figures))
+                self.color = choice(self.colors)
                 break
 
     def rotate(self):
@@ -192,7 +194,7 @@ while running:
             if event.key == pygame.K_LEFT:
                 board.move_left()
             if event.key == pygame.K_DOWN:
-                board.move_down()
+                board.move_down(500)
             if event.key == pygame.K_UP:
                 board.rotate()
 
