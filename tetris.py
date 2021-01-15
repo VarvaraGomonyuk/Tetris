@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import copy
+import sqlite3
 from random import choice
 
 
@@ -227,6 +228,7 @@ class Play(Board):
             screen.blit(string_rendered, rect)
     
     def game_over(self):
+        self.write_scores(self.score)
         self.field = copy.deepcopy(self.board)
         for i in range(30, 600, 30):
             for j in range(30, 330, 30):
@@ -234,7 +236,14 @@ class Play(Board):
                 self.rect.y = i
                 pygame.draw.rect(screen, pygame.Color(choice(self.colors)), self.rect)
         self.score = 0
-                
+
+    def write_scores(self, score):
+        con = sqlite3.connect("results.sqbpro")
+        cur = con.cursor()
+        result = f'"""INSERT INTO results(score) VALUES({str(score)})""""'
+        cur.execute(result)
+        con.commit()
+        con.close()
 
 
 start_screen()
